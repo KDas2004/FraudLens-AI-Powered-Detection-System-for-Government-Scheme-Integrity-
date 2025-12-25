@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FraudLens</title>
+</head>
+<body>
+    <h3>Listing Details: </h3>
+    <ul>
+        <li><%= application.name %></li>
+        <li><%= application.email %></li>
+        <li><%= application.phone %></li>
+        <li><%= application.aadhaar_hash %></li>
+        <li><%= application.aadhaar_masked %></li>
+        <li><%= application.pan_hash %></li>
+        <li><%= application.pan_masked %></li>
+        <li><%= application.scheme_name %></li>
+        <li><%= application.status %></li>
+        <li><%= application.createdAt %></li>
+        <li><%= application.attempts %></li>
+    </ul>
+    <br>
+    <form method="POST" action="/applications/<%=application._id%>?_method=DELETE">
+        <button>Cancle This Application</button>
+
+        <div class="mt-3">
+    <h4>Aadhaar Card</h4>
+    <a href="/uploads/<%= application.aadhaarFile %>" target="_blank">View Aadhaar</a>
+
+    <h4>PAN Card</h4>
+    <a href="/uploads/<%= application.panFile %>" target="_blank">View PAN</a>
+</div>
+
+    </form>
+</body>
+</html>

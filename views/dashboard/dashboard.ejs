@@ -1,0 +1,28 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="container mt-5">
+  <h2 class="text-center">FraudLens Dashboard</h2>
+
+  <div class="row mt-4">
+    <div class="col-md-4">
+      <div class="card text-center p-3">
+        <h4>Total Applications</h4>
+        <h2><%= total %></h2>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card text-center p-3">
+        <h4>Fraud Detected</h4>
+        <h2 class="text-danger"><%= fraud %></h2>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card text-center p-3">
+        <h4>Blockchain Blocks</h4>
+        <h2><%= blocks %></h2>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,64 @@
+<% layout("/layouts/boilerplate") %>
+<div class="row">
+    <div class="col-8 offset-2">
+        <br>
+    <h3> New Application </h3>
+    <form action="/applications" method="POST" enctype="multipart/form-data">
+
+            <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input name="application[name]" 
+            placeholder="enter your name" 
+            type="text" 
+            class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input name="application[email]" 
+            placeholder="enter your email"
+            class="form-control"
+            >
+        </div>
+
+        <div class="mb-3">
+            <label for="phone" class="form-label">Phone</label>
+            <input name="application[phone]" 
+            placeholder="enter your mobile number" 
+            type="number"
+            class="form-control"
+            >
+        </div>
+
+        <div class="mb-3">
+    <label for="Aadhar Number" class="form-label">Aadhar Number</label>
+    <input name="application[aadhaar_no]" 
+    placeholder="enter your aadhar number" 
+    type="number"
+    class="form-control">
+</div>
+
+<div class="mb-3">
+    <label for="PAN Number" class="form-label">PAN Number</label>
+    <input name="application[pan_no]" 
+    placeholder="enter PAN number"
+    class="form-control">
+</div>
+
+
+    <div class="mb-3">
+    <label for="aadhaarFile" class="form-label">Upload Aadhaar Card</label>
+    <input type="file" name="aadhaarFile" id="aadhaarFile" accept="image/*,.pdf" class="form-control" required>
+</div>
+
+<div class="mb-3">
+    <label for="panFile" class="form-label">Upload PAN Card</label>
+    <input type="file" name="panFile" id="panFile" accept="image/*,.pdf" class="form-control" required>
+</div>
+
+        <br>
+        <button class="btn btn-dark add-btn">Apply</button>
+        <br> <br>
+    </form>
+    </div>
+</div>
