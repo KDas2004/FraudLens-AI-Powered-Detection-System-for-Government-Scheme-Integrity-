@@ -1,5 +1,5 @@
 <% layout("/layouts/boilerplate") %>
-<div class="row">
+<div class="row application-list">
     <div class="col-8 offset-2">
         <br>
     <h3> New Application </h3>
@@ -8,7 +8,7 @@
             <div class="mb-3">
             <label for="name" class="form-label">Name</label>
             <input name="application[name]" 
-            placeholder="enter your name" 
+            placeholder="Enter your name" 
             type="text" 
             class="form-control">
         </div>
@@ -16,33 +16,52 @@
         <div class="mb-3">
             <label for="email" class="form-label">Email</label>
             <input name="application[email]" 
-            placeholder="enter your email"
+            placeholder="Enter your email"
             class="form-control"
             >
         </div>
 
         <div class="mb-3">
             <label for="phone" class="form-label">Phone</label>
-            <input name="application[phone]" 
-            placeholder="enter your mobile number" 
-            type="number"
-            class="form-control"
-            >
+            <input
+  name="application[phone]"
+  placeholder="Enter 10-digit mobile number"
+  type="text"
+  class="form-control"
+  pattern="[6-9][0-9]{9}"
+  maxlength="10"
+  minlength="10"
+  required
+  title="Mobile number must be 10 digits and start with 6-9">
         </div>
 
         <div class="mb-3">
     <label for="Aadhar Number" class="form-label">Aadhar Number</label>
-    <input name="application[aadhaar_no]" 
-    placeholder="enter your aadhar number" 
-    type="number"
-    class="form-control">
+    <input
+  name="application[aadhaar_no]"
+  placeholder="Enter 12-digit Aadhaar number"
+  type="number"
+  class="form-control"
+  pattern="[0-9]{12}"
+  maxlength="12"
+  minlength="12"
+  required
+  title="Aadhaar must be exactly 12 digits">
+
 </div>
 
 <div class="mb-3">
     <label for="PAN Number" class="form-label">PAN Number</label>
-    <input name="application[pan_no]" 
-    placeholder="enter PAN number"
-    class="form-control">
+    <input
+  name="application[pan_no]"
+  placeholder="Enter PAN number"
+  type="text"
+  class="form-control"
+  pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+  maxlength="10"
+  required
+  title="PAN must be in format ABCDE1234F">
+
 </div>
 
 

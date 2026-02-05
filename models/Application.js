@@ -1,20 +1,19 @@
 const mongoose = require("mongoose");
 
-const ApplicationSchema = new mongoose.Schema({
-    name: { type: String, required: true },
+const applicationSchema = new mongoose.Schema({
+    name: String,
+    email: String,
+    phone: String,
+    aadhaar_no: String,
+    pan_no: String,
 
-    email: { type: String, required: true },
+    aadhaar_file: String,
+    pan_file: String,
 
-    phone: { type: String, required: true },
-
-    aadhaar_no: { type: String, required: true },
-
-    pan_no: { type: String, required: true },
-
-    aadhaarFile: { type: String },   // stores filename
-    panFile: { type: String },       // stores filename
-
-    createdAt: { type: Date, default: Date.now }
+    fraud: {
+        type: Boolean,
+        default: false
+    }
 });
 
-module.exports = mongoose.model("Application", ApplicationSchema);
+module.exports = mongoose.model("Application", applicationSchema);

@@ -148,66 +148,66 @@ app.get("/blockchain", (req, res) => {
 });
 
 app.post(
-    "/applications",
-    upload.fields([
-        { name: "aadhaarFile", maxCount: 1 },
-        { name: "panFile", maxCount: 1 }
-    ]),
-    async (req, res) => {
+  "/applications",
+  upload.fields([
+    { name: "aadhaarFile", maxCount: 1 },
+    { name: "panFile", maxCount: 1 }
+  ]),
+  async (req, res) => {
+    try {
+      if (!req.body.application) {
+        req.flash("error", "Invalid form submission");
+        return res.redirect("/applications/new");
+      }
 
-        try {
+      // 🔹 DUPLICATE CHECK (AI LOGIC)
+      const existing = await Application.findOne({
+        $or: [
+          { aadhaar_no: req.body.application.aadhaar_no },
+          { pan_no: req.body.application.pan_no }
+        ]
+      });
 
-            // CHECK FOR DUPLICATE AADHAAR / PAN
-            const duplicateFound = chain.chain.some(block =>
-                block.data?.aadhaar_no === req.body.application.aadhaar_no ||
-                block.data?.pan_no === req.body.application.pan_no
-            );
+      let isFraud = false;
 
-            if (duplicateFound) {
-                req.flash("error", "Duplicate Aadhaar or PAN detected! Fraud suspected.");
-                return res.redirect("/applications/new");
-            }
+      if (existing) {
+        isFraud = true;
+      }
 
-            // HASH VALUES (for file integrity only)
-            const aadhaarHash = Date.now() + "-" + req.files["aadhaarFile"][0].filename;
-            const panHash = Date.now() + "-" + req.files["panFile"][0].filename;
+      // 🔹 SAVE APPLICATION WITH FRAUD FLAG
+      const application = new Application({
+        ...req.body.application,
+        aadhaar_file: req.files["aadhaarFile"][0].filename,
+        pan_file: req.files["panFile"][0].filename,
+        fraud: isFraud
+      });
 
-            // ADD BLOCK
-            chain.addBlock(
-                new Block(
-                    chain.chain.length,
-                    Date.now().toString(),
-                    {
-                        aadhaar_no: req.body.application.aadhaar_no,
-                        pan_no: req.body.application.pan_no,
-                        aadhaar_hash: aadhaarHash,
-                        pan_hash: panHash
-                    }
-                )
-            );
+      await application.save();
 
-            // SAVE TO DB
-            const newApplication = new Application({
-                name: req.body.application.name,
-                email: req.body.application.email,
-                phone: req.body.application.phone,
-                aadhaar_no: req.body.application.aadhaar_no,
-                pan_no: req.body.application.pan_no,
-                aadhaarFile: req.files["aadhaarFile"][0].filename,
-                panFile: req.files["panFile"][0].filename
-            });
+      // 🔹 ADD TO BLOCKCHAIN (UNCHANGED)
+      const blockData = {
+        aadhaar_no: application.aadhaar_no,
+        pan_no: application.pan_no,
+        fraud: application.fraud
+      };
 
-            await newApplication.save();
+      const block = new Block(Date.now().toString(), blockData);
+      chain.addBlock(block);
 
-            req.flash("success", "Application submitted successfully!");
-            res.redirect("/applications");
+      if (isFraud) {
+        req.flash("error", "Duplicate Aadhaar or PAN detected! Fraud flagged.");
+        return res.redirect("/applications/new");
+      }
 
-        } catch (err) {
-            console.error("ERROR:", err);
-            req.flash("error", "Something went wrong");
-            res.redirect("/applications/new");
-        }
+      req.flash("success", "Application submitted successfully!");
+      res.redirect("/applications");
+
+    } catch (err) {
+      console.error(err);
+      req.flash("error", "Something went wrong");
+      res.redirect("/applications/new");
     }
+  }
 );
 
 app.listen(8080, () => {

@@ -1,13 +1,17 @@
 <% layout("layouts/boilerplate") %>
-<body>
-    <h3>All Applications</h3>
-    <form method="GET" action="/applications/new">
-    </form>
-    <ul>
-        <% for(let application of allApplications) { %>
-            <li><a href="/applications/<%= application._id %>"> <%= application.name %> </a></li>
-        <% } %>
-    </ul>
-</body>
-</html>
 
+<div class="applications-page">
+    <h3 class="page-title">All Applications</h3>
+
+    <div class="applications-card">
+        <ul class="applications-list">
+            <% for(let application of allApplications) { %>
+                <li class="application-item">
+                    <a href="/applications/<%= application._id %>">
+                        <%= application.name %>
+                    </a>
+                </li>
+            <% } %>
+        </ul>
+    </div>
+</div>
