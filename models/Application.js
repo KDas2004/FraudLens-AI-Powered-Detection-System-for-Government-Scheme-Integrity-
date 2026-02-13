@@ -9,6 +9,12 @@ const applicationSchema = new mongoose.Schema({
 
     aadhaar_file: String,
     pan_file: String,
+    tamperStatus: String,
+    tamperScore: Number,
+    tamperReason: String,
+
+    ipAddress: String,
+    attempts: { type: Number, default: 1 },
 
     fraud: {
         type: Boolean,

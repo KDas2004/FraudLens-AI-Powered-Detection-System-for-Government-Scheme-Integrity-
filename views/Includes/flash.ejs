@@ -1,21 +1,29 @@
-<% if (success && success.length > 0) { %>
-    <div class="alert alert-success alert-dismissible fade show col-6 offset-3" role="alert">
-        <%= success[0] %>
-        <button type="button"
-            class="btn-close" 
-            data-bs-dismiss="alert" 
-            aria-label="close">
-        </button>
-    </div>
-<% } %>
+<% if ((success && success.length) || (error && error.length)) { %>
 
-<% if (error && error.length > 0) { %>
-    <div class="alert alert-danger alert-dismissible fade show col-6 offset-3" role="alert">
-        <%= error[0] %>
-        <button type="button"
-            class="btn-close" 
-            data-bs-dismiss="alert" 
-            aria-label="close">
-        </button>
+<div id="flashMessage" 
+     style="position: fixed; top: 70px; right: 20px; z-index: 9999; width: 300px;">
+
+  <% if(success && success.length){ %>
+    <div class="alert alert-success shadow">
+      <%= success %>
     </div>
+  <% } %>
+
+  <% if(error && error.length){ %>
+    <div class="alert alert-danger shadow">
+      <%= error %>
+    </div>
+  <% } %>
+
+</div>
+
+<script>
+  setTimeout(() => {
+    const flash = document.getElementById("flashMessage");
+    if (flash) {
+      flash.style.display = "none";
+    }
+  }, 3000);
+</script>
+
 <% } %>

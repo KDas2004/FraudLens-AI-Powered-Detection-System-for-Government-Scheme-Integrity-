@@ -24,27 +24,27 @@
         <div class="mb-3">
             <label for="phone" class="form-label">Phone</label>
             <input
+  type="number"
+  placeholder="Enter your Mobile Number"
   name="application[phone]"
-  placeholder="Enter 10-digit mobile number"
-  type="text"
-  class="form-control"
-  pattern="[6-9][0-9]{9}"
   maxlength="10"
-  minlength="10"
+  pattern="[6-9]\d{9}"
+  inputmode="numeric"
+  class="form-control"
   required
   title="Mobile number must be 10 digits and start with 6-9">
         </div>
 
         <div class="mb-3">
     <label for="Aadhar Number" class="form-label">Aadhar Number</label>
-    <input
-  name="application[aadhaar_no]"
-  placeholder="Enter 12-digit Aadhaar number"
+    <input 
   type="number"
-  class="form-control"
-  pattern="[0-9]{12}"
+  placeholder="Enter your Pan Number" 
+  name="application[aadhaar_no]"
   maxlength="12"
-  minlength="12"
+  pattern="\d{12}"
+  inputmode="numeric"
+  class="form-control"
   required
   title="Aadhaar must be exactly 12 digits">
 

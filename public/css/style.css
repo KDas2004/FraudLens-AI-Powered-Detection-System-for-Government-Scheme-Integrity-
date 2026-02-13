@@ -1,59 +1,193 @@
-body {
-    font-family: "Plus Jakarta Sans", sans-serif !important;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+/* =========================
+   GLOBAL LAYOUT
+========================= */
+
+html, body {
+    height: 100%;
+    margin: 0;
 }
 
-.container {
+.page-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.content-wrapper {
     flex: 1;
 }
 
-/* Navbar */
+body {
+  font-family: "Segoe UI", sans-serif;
+
+  /* Professional animated gradient */
+  background: linear-gradient(-45deg, #dfe9f3, #f5f7fa, #e3f2fd, #eef2f7);
+  background-size: 400% 400%;
+  animation: gradientMove 15s ease infinite;
+}
+
+/* Smooth gradient animation */
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* soft floating glow circles */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  width: 350px;
+  height: 350px;
+  border-radius: 50%;
+  filter: blur(120px);
+  z-index: -1;
+}
+
+body::before {
+  background: rgba(0,123,255,0.25);
+  top: 10%;
+  left: 10%;
+}
+
+body::after {
+  background: rgba(255,0,150,0.15);
+  bottom: 10%;
+  right: 10%;
+}
+
+/* Container animation */
+.container {
+    background: transparent !important;
+    animation: fadeIn 0.9s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* =========================
+   NAVBAR
+========================= */
 
 .navbar {
-    height: 5rem;
-    background-color: white;
+  background: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
-.fa-shield-halved {
-    color: #fe242d;
-    font-size: 2rem;
+.navbar .nav-link {
+  padding: 8px 16px;
+  margin: 0 6px;
+  border-radius: 10px;
+  background: #f2f4f7;
+  color: #333 !important;
+  font-weight: 500;
+  transition: all 0.25s ease;
+  border: 1px solid rgba(0,0,0,0.05);
 }
 
-.nav-link {
-    color: #222222 !important;
+.navbar .nav-link:hover {
+  background: #212529;
+  color: #fff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
 }
 
-/* Footer */
-
-.f-info-links a {
-    text-decoration: none;
-    color: #222222;
+.navbar .nav-link.active {
+  background: #0d6efd;
+  color: #fff !important;
 }
 
-.f-info-links a:hover {
-    text-decoration: underline;
+
+/* =========================
+   CARDS
+========================= */
+
+.card {
+    border-radius: 12px;
+    transition: all 0.25s ease;
 }
 
-.f-info-links, .f-info-brand {
-    width: 100%;
-    vertical-align: middle;
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.15);
 }
 
-.f-info {
-    text-align: center;
-    vertical-align: middle;
-    display: flex;
-    height: 6rem;
-    background-color: #ebebeb;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: space-evenly;
-}
 
-/* new page */
+/* =========================
+   BUTTONS
+========================= */
+
 .add-btn {
     background-color: #fe242d !important;
     border: none !important;
+    border-radius: 8px;
+    padding: 8px 18px;
+    transition: 0.2s ease;
+}
+
+.add-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+}
+
+
+/* =========================
+   FOOTER (FIXED)
+========================= */
+
+.footer {
+    background: #f1f1f1;
+    text-align: center;
+    padding: 15px 0;
+    margin-top: auto;   /* pushes footer to bottom */
+}
+
+.footer a {
+    text-decoration: none;
+    color: #333;
+    margin: 0 6px;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================
+   FORM INPUT POLISH
+========================= */
+
+input, select, textarea {
+    border-radius: 8px !important;
+}
+
+input:focus {
+    box-shadow: 0 0 6px rgba(13,110,253,0.3) !important;
+}
+
+
+/* =========================
+   SMALL UI IMPROVEMENTS
+========================= */
+
+h1, h2, h3, h4, h5 {
+    font-weight: 600;
+}
+
+.alert {
+    border-radius: 10px;
+}
+
+.card {
+    border-radius: 12px;
+    transition: 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
 }

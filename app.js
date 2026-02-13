@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -10,50 +12,40 @@ const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models/user.js");
-const {isLoggedIn} = require("./middleware.js");
+const { isLoggedIn } = require("./middleware.js");
 const upload = require("./multer.js");
 const Blockchain = require("./blockchain/blockchain");
 const Block = require("./blockchain/block");
+const checkTampering = require("./services/aiTamperCheck");
+
 const chain = new Blockchain();
 
 app.use(methodOverride("_method"));
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "/public")));
+app.use("/uploads", express.static("uploads"));
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/fraudbene";
 
-const userRouter = require("./routes/user.js");
-
-main()
-   .then(() => {
-    console.log("connected to DB");
-}).catch((err) => {
-    console.log(err);
-});
-
 async function main() {
-    await mongoose.connect(MONGO_URL);
-};
+  await mongoose.connect(MONGO_URL);
+  console.log("connected to DB");
+}
+main().catch((err) => console.log(err));
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-app.use(express.urlencoded({extended: true}));
-app.use(methodOverride("_method"));
-app.engine('ejs', ejsMate);
-app.use(express.static(path.join(__dirname, "/public")));
+app.engine("ejs", ejsMate);
 
 const sessionOption = {
-    secret: "mysupersecretcode",
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-        expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-    },
+  secret: "mysupersecretcode",
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  },
 };
-
-app.get("/", (req, res) => {
-    res.send("Hi, this is VOIS'S PROJECT HOME PAGE");
-});
 
 app.use(session(sessionOption));
 app.use(flash());
@@ -61,141 +53,251 @@ app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
-
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 app.use((req, res, next) => {
-    res.locals.success = req.flash("success");
-    res.locals.error = req.flash("error");
-    res.locals.currUser = req.user;
-    next();
+  res.locals.success = req.flash("success");
+  res.locals.error = req.flash("error");
+  res.locals.currUser = req.user;
+  next();
 });
 
-/*app.get("/demouser", async (req, res) => {
-    let fakeUser = new User({
-        email: "student@gmail.com",
-        username: "sigma-student"
-    });
-
-    let registeredUser = await User.register(fakeUser, "helloworld");
-    res.send(registeredUser);
-});*/
-
-//user route
+const userRouter = require("./routes/user.js");
 app.use("/", userRouter);
 
-//index route
+app.get("/", (req, res) => {
+  res.send("Hi, this is VOIS'S PROJECT HOME PAGE");
+});
+
 app.get("/applications", async (req, res) => {
-    const allApplications = await Application.find({});
-    res.render("applications/index", { allApplications });
-    });
+  const allApplications = await Application.find({});
+  res.render("applications/index", { allApplications });
+});
 
-//New Route
 app.get("/applications/new", isLoggedIn, (req, res) => {
-    res.render("applications/new.ejs");
+  res.render("applications/new.ejs");
 });
 
-//show route
 app.get("/applications/:id", async (req, res) => {
-    let {id} = req.params;
-    const application = await Application.findById(id);
-    res.render("applications/show.ejs", {application});
+  let { id } = req.params;
+  const application = await Application.findById(id);
+  res.render("applications/show.ejs", { application });
 });
 
-//Delete route
 app.delete("/applications/:id", async (req, res) => {
-    let {id} = req.params;
-    let deletedApplication = await Application.findByIdAndDelete(id);
-    console.log(deletedApplication);
-    res.redirect("/applications");
+  let { id } = req.params;
+  await Application.findByIdAndDelete(id);
+  res.redirect("/applications");
 });
-
-/*app.get("/testSchema", async (req, res) => {
-    let sampleApplication = new Application ({
-  _id: "6703a2fbbd2f11e3c48762a1",
-  name: "Rahul Sharma",
-  email: "rahul@example.com",
-  phone: "9876543210",
-  aadhaar_hash: "5c1e87c35a9f8d8140b8f9e2a97b1a4a6c4b7d3c8d...",
-  aadhaar_masked: "1234-56********",
-  pan_hash: "0ad1e32d59aaf4129f6c1e761bc782d93d1a12b54...",
-  pan_masked: "ABCDE****",
-  scheme_name: "Pradhan Mantri Awas Yojana",
-  status: "pending",
-  createdAt: "2025-10-07T09:30:00.000Z",
-  attempts: 1,
-  __v: 0
-    });
-
-    await sampleApplication.save();
-    console.log("sample was saved");
-    res.send("successful testing");
-});*/
 
 app.get("/dashboard", async (req, res) => {
-  const total = await Application.countDocuments();
-  const fraud = await Application.countDocuments({ fraud: true });
-  const blocks = chain.chain.length;
+  try {
+    const total = await Application.countDocuments();
 
-  res.render("dashboard/dashboard", { total, fraud, blocks });
+    const fraud = await Application.countDocuments({ fraud: true });
+
+    const tampered = await Application.countDocuments({ tamperStatus: true });
+
+    const blocks = chain.chain.length;   // blockchain blocks count
+
+    res.render("dashboard/dashboard", {
+      total,
+      fraud,
+      tampered,
+      blocks
+    });
+
+  } catch (err) {
+    console.log(err);
+    res.send("Dashboard error");
+  }
 });
-
-//blockchain
 
 app.get("/blockchain", (req, res) => {
-    res.json(chain.chain);
+  res.json(chain.chain);
 });
 
+// ===============================
+// MAIN APPLICATION SUBMIT ROUTE
+// ===============================
 app.post(
   "/applications",
   upload.fields([
-    { name: "aadhaarFile", maxCount: 1 },
-    { name: "panFile", maxCount: 1 }
+    { name: "aadhaarFile", maxCount: 100 },
+    { name: "panFile", maxCount: 100 },
   ]),
   async (req, res) => {
     try {
+      const userIP = req.ip;
+
       if (!req.body.application) {
         req.flash("error", "Invalid form submission");
         return res.redirect("/applications/new");
       }
 
-      // 🔹 DUPLICATE CHECK (AI LOGIC)
+      if (!req.files?.aadhaarFile || !req.files?.panFile) {
+        req.flash("error", "Both Aadhaar and PAN files required");
+        return res.redirect("/applications/new");
+      }
+
+      const aadhaarPath = req.files["aadhaarFile"][0].path;
+      const panPath = req.files["panFile"][0].path;
+
+      // Function to clean AI response
+      function cleanAIResponse(text) {
+        return text.replace(/```json|```/g, "").trim();
+      }
+
+      // ======================
+      // AI CHECK FOR AADHAAR
+      // ======================
+      const aadhaarResult = await checkTampering(aadhaarPath);
+      console.log("AADHAAR RESULT:", aadhaarResult);
+
+      let parsedAadhaar;
+      try {
+        const cleaned = cleanAIResponse(aadhaarResult);
+        parsedAadhaar = JSON.parse(cleaned);
+        aadhaarConfidence = Math.round(parsedAadhaar.confidence * 100);
+      } catch (e) {
+        console.log("AI parsing error:", e);
+        req.flash("error", "AI could not analyze Aadhaar document");
+        return res.redirect("/applications/new");
+      }
+
+      // number entered in form
+      const enteredAadhaar = req.body.application.aadhaar_no;
+
+      // number extracted by AI
+      const extractedAadhaar = parsedAadhaar.extractedNumber;
+
+     // compare (remove spaces for safety)
+     if (
+        extractedAadhaar &&
+        extractedAadhaar.replace(/\s/g, "") !== enteredAadhaar.replace(/\s/g, "")
+      ) {
+      req.flash("error", "Aadhaar number does not match document");
+      return res.redirect("/applications/new");
+    }
+
+    // Aadhaar validations
+      if (parsedAadhaar.documentType !== "aadhaar") {
+      req.flash("error", "Application cancelled: Invalid Aadhaar document.");
+      return res.redirect("/applications/new");
+      }
+
+      if (parsedAadhaar.tampered === true) {
+      req.flash(
+      "error",
+      `Application cancelled: Aadhaar appears tampered. Reason: ${parsedAadhaar.reason}`
+      );
+      return res.redirect("/applications/new");
+    }
+      // ======================
+      // AI CHECK FOR PAN
+      // ======================
+      const panResult = await checkTampering(panPath);
+      console.log("PAN RESULT:", panResult);
+
+      let parsedPan;
+      try {
+        const cleaned = cleanAIResponse(panResult);
+        parsedPan = JSON.parse(cleaned);
+        panConfidence = Math.round(parsedPan.confidence * 100);
+      } catch (e) {
+        console.log("AI parsing error:", e);
+        req.flash("error", "AI could not analyze PAN document");
+        return res.redirect("/applications/new");
+      }
+
+      const enteredPan = req.body.application.pan_no;
+      const extractedPan = parsedPan.extractedNumber;
+
+if (
+  extractedPan &&
+  extractedPan.replace(/\s/g, "").toUpperCase() !== enteredPan.toUpperCase()
+) {
+  req.flash("error", "PAN number does not match document");
+  return res.redirect("/applications/new");
+}
+
+      // PAN validations
+      if (parsedPan.documentType !== "pan") {
+      req.flash("error", "Application cancelled: Invalid PAN document.");
+      return res.redirect("/applications/new");
+      }
+
+      if (parsedPan.tampered === true) {
+      req.flash(
+      "error",
+      `Application cancelled: PAN appears tampered. Reason: ${parsedPan.reason}`
+      );
+      return res.redirect("/applications/new");
+      }
+
+      const finalConfidence = Math.min(aadhaarConfidence, panConfidence);
+
+      // ======================
+      // DUPLICATE CHECK
+      // ======================
       const existing = await Application.findOne({
         $or: [
           { aadhaar_no: req.body.application.aadhaar_no },
-          { pan_no: req.body.application.pan_no }
-        ]
+          { pan_no: req.body.application.pan_no },
+        ],
       });
 
-      let isFraud = false;
+      let isFraud = existing ? true : false;
 
-      if (existing) {
-        isFraud = true;
-      }
+      const attemptCount = await Application.countDocuments({ ipAddress: userIP });
 
-      // 🔹 SAVE APPLICATION WITH FRAUD FLAG
+if (attemptCount >= 3) {
+  req.flash("error", "Too many attempts detected from this device. Try again later.");
+  return res.redirect("/applications/new");
+}
+
+const tamperStatus = parsedAadhaar.tampered || parsedPan.tampered;
+
+const tamperScore = Math.min(
+  Math.round(parsedAadhaar.confidence * 100),
+  Math.round(parsedPan.confidence * 100)
+);
+
+const tamperReason =
+  parsedAadhaar.reason || parsedPan.reason || "No issue detected";
+
+      // ======================
+      // SAVE APPLICATION
+      // ======================
       const application = new Application({
-        ...req.body.application,
-        aadhaar_file: req.files["aadhaarFile"][0].filename,
-        pan_file: req.files["panFile"][0].filename,
-        fraud: isFraud
-      });
+  ...req.body.application,
+  aadhaar_file: req.files["aadhaarFile"][0].filename,
+  pan_file: req.files["panFile"][0].filename,
+  fraud: isFraud,
+  tamperStatus,
+  tamperScore,
+  tamperReason,
+  ipAddress: userIP,
+  attempts: attemptCount + 1
+});
 
       await application.save();
 
-      // 🔹 ADD TO BLOCKCHAIN (UNCHANGED)
+      // ======================
+      // BLOCKCHAIN ENTRY
+      // ======================
       const blockData = {
         aadhaar_no: application.aadhaar_no,
         pan_no: application.pan_no,
-        fraud: application.fraud
+        fraud: application.fraud,
       };
 
       const block = new Block(Date.now().toString(), blockData);
       chain.addBlock(block);
 
       if (isFraud) {
-        req.flash("error", "Duplicate Aadhaar or PAN detected! Fraud flagged.");
+        req.flash("error", "Duplicate Aadhaar or PAN detected!");
         return res.redirect("/applications/new");
       }
 
@@ -203,13 +305,13 @@ app.post(
       res.redirect("/applications");
 
     } catch (err) {
-      console.error(err);
-      req.flash("error", "Something went wrong");
-      res.redirect("/applications/new");
-    }
+  console.error("ERROR DETAILS:", err);
+  req.flash("error", err.message);
+  res.redirect("/applications/new");
+}
   }
 );
 
 app.listen(8080, () => {
-    console.log("Server is listening to port 8080");
+  console.log("Server is listening to port 8080");
 });
