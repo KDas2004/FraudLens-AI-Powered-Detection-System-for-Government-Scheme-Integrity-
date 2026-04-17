@@ -4,12 +4,18 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const checkTampering = async (filePath) => {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+  // USE YOUR PREVIOUS WORKING MODEL
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.5-flash"
+  });
 
   const imageBuffer = fs.readFileSync(filePath);
 
-  const result = await model.generateContent([
-`You are a document verification AI.
+  try {
+
+    const result = await model.generateContent([
+      `You are a document verification AI.
 
 Analyze this document image carefully.
 
@@ -19,8 +25,9 @@ Tasks:
 3. Extract the document number:
    - Aadhaar → 12 digit number
    - PAN → 10 character alphanumeric
-4. Give a confidence score between 0 and 1.
-5. Provide a short reason.
+4. Extract the full name from the document.
+5. Give a confidence score between 0 and 1.
+6. Provide a short reason.
 
 Respond ONLY in valid JSON format. Do not add explanations or markdown.
 
@@ -29,19 +36,36 @@ Expected format:
   "documentType": "aadhaar" OR "pan" OR "unknown",
   "tampered": true or false,
   "confidence": number,
-  "extractedNumber": "string or null",
+  "extractedNumber": "string",
+  "extractedName": "string",
   "reason": "short reason"
 }
 `,
-{
-  inlineData: {
-    mimeType: "image/jpeg",
-    data: imageBuffer.toString("base64"),
-  },
-}
-]);
+      {
+        inlineData: {
+          mimeType: "image/jpeg",
+          data: imageBuffer.toString("base64"),
+        },
+      },
+    ]);
 
-  return result.response.text();
+    return result.response.text();
+
+  } catch (error) {
+
+    console.log("Gemini API Error:", error.message);
+
+    // SAFE FALLBACK RESPONSE (prevents crash)
+    return JSON.stringify({
+      documentType: "unknown",
+      tampered: false,
+      confidence: 0,
+      extractedNumber: "",
+      extractedName: "",
+      reason: "AI service temporarily unavailable"
+    });
+
+  }
 };
 
 module.exports = checkTampering;

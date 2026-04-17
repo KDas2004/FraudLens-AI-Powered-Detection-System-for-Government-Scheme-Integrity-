@@ -1,33 +1,39 @@
 <% layout("/layouts/boilerplate") %>
 
-<div class="row mt-3 auth-box">
-    <h1 class="col-6 offset-3"> Login on FraudLens</h1>
-    <div class="col-6 offset-3">
-        <form action="/login" method="POST" class="needs-validation" novalidate>
-            <div class="mb-3">
-        <lable for="username" class="form-label">Username</lable>
-        <input 
-        name="username" 
-        id:"username"
-        type="text" 
-        class="form-control"
-        required
-        >
+<div style="min-height:70vh;display:flex;align-items:center;justify-content:center;">
+    <div style="width:100%;max-width:420px;">
 
-        <div class="mb-3">
-        <lable for="password" class="form-label">Password</lable>
-        <input 
-        name="password" 
-        id:"password"
-        type="password" 
-        class="form-control"
-        required
-        >
+        <div style="text-align:center;margin-bottom:2rem;">
+            <div style="font-family:var(--mono);font-size:1.8rem;font-weight:700;color:var(--accent);letter-spacing:4px;margin-bottom:0.5rem;">⬡ FRAUDLENS</div>
+            <p style="font-family:var(--mono);font-size:0.68rem;letter-spacing:2px;color:var(--muted);">SECURE OPERATOR LOGIN</p>
         </div>
 
-        <button class="btn btn-success"> Login </button>
-        <br>
+        <div class="fl-card">
+            <form action="/login" method="POST">
 
-        </form>
+                <div style="margin-bottom:1.2rem;">
+                    <label class="form-label">Username</label>
+                    <input name="username" type="text" class="form-control"
+                        placeholder="Enter username" required autocomplete="username">
+                </div>
+
+                <div style="margin-bottom:1.8rem;">
+                    <label class="form-label">Password</label>
+                    <input name="password" type="password" class="form-control"
+                        placeholder="Enter password" required autocomplete="current-password">
+                </div>
+
+                <button type="submit" class="btn-fl-primary">
+                    Login →
+                </button>
+
+            </form>
+
+            <p style="text-align:center;font-family:var(--mono);font-size:0.68rem;color:var(--muted);margin-top:1.5rem;">
+                No account?
+                <a href="/signup" style="color:var(--accent);text-decoration:none;">Register here</a>
+            </p>
+        </div>
+
     </div>
-</div>    
+</div>

@@ -1,17 +1,84 @@
 <% layout("layouts/boilerplate") %>
 
-<div class="applications-page">
-    <h3 class="page-title">All Applications</h3>
+<div class="page-heading">All Applications</div>
+<div class="page-sub">TOTAL RECORDS: <%= allApplications.length %></div>
 
-    <div class="applications-card">
-        <ul class="applications-list">
-            <% for(let application of allApplications) { %>
-                <li class="application-item">
-                    <a href="/applications/<%= application._id %>">
-                        <%= application.name %>
-                    </a>
-                </li>
-            <% } %>
-        </ul>
-    </div>
+<div class="fl-card">
+    <% if (allApplications.length === 0) { %>
+        <div style="text-align:center;padding:3rem;color:var(--muted);">
+            <div style="font-size:2.5rem;margin-bottom:1rem;">📭</div>
+            <p style="font-family:var(--mono);font-size:0.8rem;letter-spacing:1px;">NO APPLICATIONS FOUND</p>
+        </div>
+    <% } else { %>
+        <table class="fl-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Scheme</th>
+                    <th>Fraud Score</th>
+                    <th>Verdict</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% for(let i = 0; i < allApplications.length; i++) { %>
+                    <% let app = allApplications[i]; %>
+                    <%
+                        var rowVerdict = app.fraudVerdict || 'LOW RISK';
+                        var rowBadge = rowVerdict === 'HIGH RISK' ? 'fl-badge-danger' : rowVerdict === 'MEDIUM RISK' ? 'fl-badge-warning' : 'fl-badge-success';
+                        var rowScore = app.fraudScore || 0;
+                        var scoreColor = rowVerdict === 'HIGH RISK' ? '#ff3d5a' : rowVerdict === 'MEDIUM RISK' ? '#ffaa00' : '#00e5b0';
+                    %>
+                    <tr>
+                        <td style="font-family:var(--mono);font-size:0.75rem;color:var(--muted);">
+                            <%= String(i + 1).padStart(2, '0') %>
+                        </td>
+                        <td style="font-weight:600;"><%= app.name %></td>
+                        <td>
+                            <span style="font-family:var(--mono);font-size:0.72rem;color:var(--muted);">
+                                <%= app.scheme || 'GENERAL' %>
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <div style="flex:1;background:var(--surface2);border-radius:99px;height:4px;width:60px;">
+                                    <div style="width:<%= rowScore %>%;height:100%;background:<%= scoreColor %>;border-radius:99px;"></div>
+                                </div>
+                                <span style="font-family:var(--mono);font-size:0.72rem;color:<%= scoreColor %>;">
+                                    <%= rowScore %>
+                                </span>
+                            </div>
+                        </td>
+                        <td><span class="fl-badge <%= rowBadge %>"><%= rowVerdict %></span></td>
+                        <td>
+                            <% if (app.fraud) { %>
+                                <span class="fl-badge fl-badge-danger">⚠ FLAGGED</span>
+                            <% } else { %>
+                                <span class="fl-badge fl-badge-success">✓ CLEAN</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <a href="/applications/<%= app._id %>"
+                                style="font-family:var(--mono);font-size:0.68rem;letter-spacing:1px;border:1px solid var(--border2);padding:0.3rem 0.8rem;border-radius:5px;color:var(--text);text-decoration:none;transition:all 0.2s;"
+                                onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+                                onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text)'">
+                                VIEW →
+                            </a>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    <% } %>
+</div>
+
+<div style="margin-top:1.5rem;text-align:right;">
+    <a href="/applications/new"
+        style="display:inline-block;background:var(--accent);color:#000;font-family:var(--mono);font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:0.7rem 1.8rem;border-radius:8px;text-decoration:none;transition:all 0.2s;"
+        onmouseover="this.style.background='#00c99a';this.style.transform='translateY(-1px)'"
+        onmouseout="this.style.background='var(--accent)';this.style.transform='translateY(0)'">
+        + New Application
+    </a>
 </div>

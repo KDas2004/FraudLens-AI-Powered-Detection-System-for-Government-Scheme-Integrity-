@@ -1,46 +1,130 @@
 <% layout("/layouts/boilerplate") %>
 
-<div class="container mt-5 dashboard-card fraud">
-  <h2 class="text-center">FraudLens Dashboard</h2>
+<div class="page-heading">Intelligence Dashboard</div>
+<div class="page-sub">REAL-TIME FRAUD MONITORING — FRAUDLENS SYSTEM</div>
 
-<div class="container mt-4">
-  <div class="row">
+<!-- Stat Cards -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;">
+    <div class="stat-card accent">
+        <div class="stat-label">Total Applications</div>
+        <div class="stat-value"><%= total %></div>
+        <div class="stat-icon">📋</div>
+    </div>
+    <div class="stat-card danger">
+        <div class="stat-label">Fraud Detected</div>
+        <div class="stat-value"><%= fraud %></div>
+        <div class="stat-icon">🚨</div>
+    </div>
+    <div class="stat-card warning">
+        <div class="stat-label">Tampered Docs</div>
+        <div class="stat-value"><%= tampered %></div>
+        <div class="stat-icon">⚠️</div>
+    </div>
+    <div class="stat-card blue">
+        <div class="stat-label">Blockchain Blocks</div>
+        <div class="stat-value"><%= blocks %></div>
+        <div class="stat-icon">🔗</div>
+    </div>
+</div>
 
-    <div class="col-md-3">
-      <div class="card text-center shadow-sm">
-        <div class="card-body">
-          <h5>Total Applications</h5>
-          <h3><%= total %></h3>
+<!-- Second row stats -->
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem;">
+    <div class="stat-card danger">
+        <div class="stat-label">High Risk</div>
+        <div class="stat-value"><%= typeof highRisk !== 'undefined' ? highRisk : '—' %></div>
+        <div class="stat-icon">🔴</div>
+    </div>
+    <div class="stat-card warning">
+        <div class="stat-label">Medium Risk</div>
+        <div class="stat-value"><%= typeof medRisk !== 'undefined' ? medRisk : '—' %></div>
+        <div class="stat-icon">🟡</div>
+    </div>
+    <div class="stat-card accent">
+        <div class="stat-label">Fraud Rate</div>
+        <div class="stat-value">
+            <%= total > 0 ? Math.round((fraud / total) * 100) : 0 %>%
         </div>
-      </div>
+        <div class="stat-icon">📊</div>
+    </div>
+</div>
+
+<!-- Bottom panels -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+
+    <!-- Scheme Breakdown -->
+    <div class="fl-card">
+        <p style="font-family:var(--mono);font-size:0.65rem;letter-spacing:2px;color:var(--muted);margin-bottom:1.2rem;">SCHEME BREAKDOWN</p>
+        <% if (typeof schemeStats !== 'undefined' && schemeStats.length > 0) { %>
+            <% schemeStats.forEach(function(s) { %>
+                <% var rate = s.total > 0 ? Math.round((s.flagged / s.total) * 100) : 0; %>
+                <div style="margin-bottom:1rem;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;">
+                        <span style="font-family:var(--mono);font-size:0.72rem;color:var(--text);">
+                            <%= s._id || 'GENERAL' %>
+                        </span>
+                        <span style="font-family:var(--mono);font-size:0.68rem;color:var(--muted);">
+                            <%= s.flagged %>/<%= s.total %> flagged
+                        </span>
+                    </div>
+                    <div style="background:var(--surface2);border-radius:99px;height:5px;">
+                        <div style="width:<%= rate %>%;height:100%;background:var(--danger);border-radius:99px;"></div>
+                    </div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <p style="font-family:var(--mono);font-size:0.75rem;color:var(--muted);text-align:center;padding:2rem 0;">
+                No scheme data yet
+            </p>
+        <% } %>
     </div>
 
-    <div class="col-md-3">
-      <div class="card text-center shadow-sm border-danger">
-        <div class="card-body">
-          <h5>Fraud Detected</h5>
-          <h3 class="text-danger"><%= fraud %></h3>
-        </div>
-      </div>
+    <!-- Recent Flagged -->
+    <div class="fl-card">
+        <p style="font-family:var(--mono);font-size:0.65rem;letter-spacing:2px;color:var(--muted);margin-bottom:1.2rem;">RECENT FLAGGED APPLICATIONS</p>
+        <% if (typeof recentFlagged !== 'undefined' && recentFlagged.length > 0) { %>
+            <% recentFlagged.forEach(function(app) { %>
+                <%
+                    var rv = app.fraudVerdict || 'LOW RISK';
+                    var rc = rv === 'HIGH RISK' ? '#ff3d5a' : rv === 'MEDIUM RISK' ? '#ffaa00' : '#00e5b0';
+                %>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:0.7rem 0;border-bottom:1px solid var(--border);">
+                    <div>
+                        <p style="font-size:0.88rem;font-weight:600;margin:0;"><%= app.name %></p>
+                        <p style="font-family:var(--mono);font-size:0.65rem;color:var(--muted);margin:0;">
+                            <%= app.scheme || 'GENERAL' %>
+                        </p>
+                    </div>
+                    <div style="text-align:right;">
+                        <p style="font-family:var(--mono);font-size:1rem;font-weight:700;color:<%= rc %>;margin:0;">
+                            <%= app.fraudScore || 0 %>
+                        </p>
+                        <p style="font-family:var(--mono);font-size:0.6rem;color:<%= rc %>;margin:0;">
+                            <%= rv %>
+                        </p>
+                    </div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <p style="font-family:var(--mono);font-size:0.75rem;color:var(--muted);text-align:center;padding:2rem 0;">
+                No flagged applications yet
+            </p>
+        <% } %>
     </div>
 
-    <div class="col-md-3">
-      <div class="card text-center shadow-sm border-warning">
-        <div class="card-body">
-          <h5>Tampered Docs</h5>
-          <h3 class="text-warning"><%= tampered %></h3>
-        </div>
-      </div>
-    </div>
+</div>
 
-    <div class="col-md-3">
-      <div class="card text-center shadow-sm border-success">
-        <div class="card-body">
-          <h5>Blockchain Blocks</h5>
-          <h3 class="text-success"><%= blocks %></h3>
+<!-- Blockchain status -->
+<div class="fl-card" style="margin-top:1.5rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+            <p style="font-family:var(--mono);font-size:0.65rem;letter-spacing:2px;color:var(--muted);margin-bottom:0.3rem;">BLOCKCHAIN INTEGRITY</p>
+            <p style="font-family:var(--mono);font-size:1rem;color:var(--accent);font-weight:700;">
+                ✓ CHAIN VALID — <%= blocks %> BLOCKS RECORDED
+            </p>
         </div>
-      </div>
+        <a href="/blockchain" target="_blank"
+            style="font-family:var(--mono);font-size:0.68rem;letter-spacing:1px;border:1px solid var(--border2);padding:0.4rem 1rem;border-radius:6px;color:var(--muted);text-decoration:none;">
+            VIEW RAW CHAIN →
+        </a>
     </div>
-
-  </div>
 </div>

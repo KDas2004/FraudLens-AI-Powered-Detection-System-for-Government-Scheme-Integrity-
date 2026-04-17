@@ -39,7 +39,7 @@ router.post(
     }),
     (req, res) => {
         req.flash("success", "Welcome back!");
-        const redirectUrl = res.locals.redirectUrl || "/applications";
+        const redirectUrl = res.locals.redirectUrl || "/dashboard";
         res.redirect(redirectUrl);
     }
 );

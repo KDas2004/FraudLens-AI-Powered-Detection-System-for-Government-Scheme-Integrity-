@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FraudLens — AI Powered Fraud Detection</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #080a0f;
+            --surface: #0f1117;
+            --surface2: #161b24;
+            --border: #1e2433;
+            --border2: #2a3347;
+            --text: #e2e8f0;
+            --muted: #64748b;
+            --accent: #00e5b0;
+            --danger: #ff3d5a;
+            --warning: #ffaa00;
+            --mono: 'Space Mono', monospace;
+            --display: 'Syne', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--display);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Dot grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(0,229,176,0.06) 1px, transparent 1px);
+            background-size: 32px 32px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Glow blobs */
+        .blob1 {
+            position: fixed;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(0,229,176,0.06) 0%, transparent 70%);
+            top: -200px; left: -200px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .blob2 {
+            position: fixed;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(255,61,90,0.05) 0%, transparent 70%);
+            bottom: -100px; right: -100px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── NAVBAR ── */
+        .fl-navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            background: rgba(8,10,15,0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .fl-brand {
+            font-family: var(--mono);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 3px;
+            text-decoration: none;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .fl-brand .dot {
+            width: 8px; height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%,100% { opacity:1; transform:scale(1); }
+            50% { opacity:0.4; transform:scale(0.8); }
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            list-style: none;
+        }
+        .nav-links a {
+            font-family: var(--mono);
+            font-size: 0.68rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--muted);
+            text-decoration: none;
+            padding: 0.4rem 0.9rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .nav-links a:hover { color: var(--accent); border-color: rgba(0,229,176,0.2); background: rgba(0,229,176,0.05); }
+        .nav-links .btn-primary-nav {
+            background: var(--accent);
+            color: #000 !important;
+            font-weight: 700;
+            border-color: var(--accent) !important;
+        }
+        .nav-links .btn-primary-nav:hover { background: #00c99a; }
+
+        /* ── HERO ── */
+        .hero {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 6rem 2rem 4rem;
+        }
+
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--accent);
+            border: 1px solid rgba(0,229,176,0.25);
+            background: rgba(0,229,176,0.05);
+            padding: 0.35rem 1rem;
+            border-radius: 99px;
+            margin-bottom: 2rem;
+            animation: fadeUp 0.6s ease both;
+        }
+        .hero-tag .live-dot {
+            width: 6px; height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        .hero-title {
+            font-family: var(--mono);
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -2px;
+            margin-bottom: 1.5rem;
+            animation: fadeUp 0.6s 0.1s ease both;
+        }
+        .hero-title .accent { color: var(--accent); }
+        .hero-title .danger { color: var(--danger); }
+
+        .hero-sub {
+            font-size: 1.1rem;
+            color: var(--muted);
+            max-width: 560px;
+            line-height: 1.7;
+            margin-bottom: 2.5rem;
+            animation: fadeUp 0.6s 0.2s ease both;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeUp 0.6s 0.3s ease both;
+        }
+
+        .btn-hero-primary {
+            background: var(--accent);
+            color: #000;
+            font-family: var(--mono);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 0.85rem 2.2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-hero-primary:hover {
+            background: #00c99a;
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0,229,176,0.25);
+        }
+
+        .btn-hero-outline {
+            background: transparent;
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 0.85rem 2.2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            border: 1px solid var(--border2);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-hero-outline:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(0,229,176,0.05);
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            padding: 2rem;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: rgba(15,17,23,0.8);
+            animation: fadeUp 0.6s 0.4s ease both;
+            flex-wrap: wrap;
+        }
+        .stat-item { text-align: center; }
+        .stat-item .num {
+            font-family: var(--mono);
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent);
+            display: block;
+        }
+        .stat-item .lbl {
+            font-family: var(--mono);
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        /* ── FEATURES ── */
+        .section {
+            position: relative;
+            z-index: 1;
+            padding: 5rem 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .section-tag {
+            font-family: var(--mono);
+            font-size: 0.62rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.8rem;
+        }
+        .section-title {
+            font-family: var(--mono);
+            font-size: clamp(1.5rem, 3vw, 2.2rem);
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+            letter-spacing: -0.5px;
+        }
+        .section-sub {
+            color: var(--muted);
+            font-size: 0.95rem;
+            max-width: 500px;
+            line-height: 1.7;
+            margin-bottom: 3rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .feature-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.8rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .feature-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--border2);
+        }
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+        }
+        .feature-card.green::before  { background: linear-gradient(90deg, var(--accent), transparent); }
+        .feature-card.red::before    { background: linear-gradient(90deg, var(--danger), transparent); }
+        .feature-card.yellow::before { background: linear-gradient(90deg, var(--warning), transparent); }
+        .feature-card.blue::before   { background: linear-gradient(90deg, #0066ff, transparent); }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        .feature-title {
+            font-family: var(--mono);
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 0.6rem;
+            letter-spacing: 0.5px;
+        }
+        .feature-desc {
+            color: var(--muted);
+            font-size: 0.85rem;
+            line-height: 1.65;
+        }
+
+        /* ── HOW IT WORKS ── */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            counter-reset: steps;
+        }
+        .step-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.8rem;
+            position: relative;
+        }
+        .step-num {
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin-bottom: 0.8rem;
+        }
+        .step-title {
+            font-family: var(--mono);
+            font-size: 0.88rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .step-desc {
+            color: var(--muted);
+            font-size: 0.82rem;
+            line-height: 1.6;
+        }
+
+        /* ── CTA ── */
+        .cta-section {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 5rem 2rem;
+            border-top: 1px solid var(--border);
+            background: var(--surface);
+        }
+        .cta-title {
+            font-family: var(--mono);
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -0.5px;
+        }
+        .cta-sub {
+            color: var(--muted);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        /* ── FOOTER ── */
+        .fl-footer {
+            position: relative;
+            z-index: 1;
+            border-top: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            text-align: center;
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+        .fl-footer span { color: var(--accent); }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            .hero-title { letter-spacing: -1px; }
+            .stats-bar { gap: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="blob1"></div>
+<div class="blob2"></div>
+
+<!-- NAVBAR -->
+<nav class="fl-navbar">
+    <a href="/" class="fl-brand">
+        <span class="dot"></span>
+        FraudLens
+    </a>
+    <ul class="nav-links">
+        <li><a href="/applications">Applications</a></li>
+        <li><a href="/dashboard">Dashboard</a></li>
+        <% if (currUser) { %>
+            <li><a href="/applications/new" class="btn-primary-nav">Apply Now</a></li>
+            <li><a href="/logout" style="color:var(--muted);">Logout</a></li>
+        <% } else { %>
+            <li><a href="/login">Login</a></li>
+            <li><a href="/signup" class="btn-primary-nav">Sign Up</a></li>
+        <% } %>
+    </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-tag">
+        <span class="live-dot"></span>
+        AI-Powered • Blockchain-Secured • Real-Time
+    </div>
+    <h1 class="hero-title">
+        Detect Fraud.<br>
+        <span class="accent">Protect</span> Welfare.<br>
+        <span class="danger">Stop</span> Schemes.
+    </h1>
+    <p class="hero-sub">
+        FraudLens uses AI document verification, behavioral analysis, and blockchain audit trails to prevent fraud in government welfare schemes.
+    </p>
+    <div class="hero-actions">
+        <a href="/applications/new" class="btn-hero-primary">
+            🛡️ Apply for Scheme
+        </a>
+        <a href="/dashboard" class="btn-hero-outline">
+            📊 View Dashboard
+        </a>
+    </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+    <div class="stat-item">
+        <span class="num">99.2%</span>
+        <span class="lbl">Detection Accuracy</span>
+    </div>
+    <div class="stat-item">
+        <span class="num">5+</span>
+        <span class="lbl">Welfare Schemes</span>
+    </div>
+    <div class="stat-item">
+        <span class="num">&lt;2s</span>
+        <span class="lbl">AI Verify Time</span>
+    </div>
+    <div class="stat-item">
+        <span class="num">100%</span>
+        <span class="lbl">Blockchain Audit</span>
+    </div>
+</div>
+
+<!-- FEATURES -->
+<div class="section">
+    <p class="section-tag">Core Capabilities</p>
+    <h2 class="section-title">Built to catch every type of fraud</h2>
+    <p class="section-sub">From duplicate identities to sophisticated syndicates — FraudLens covers it all.</p>
+
+    <div class="features-grid">
+        <div class="feature-card green">
+            <div class="feature-icon">🤖</div>
+            <div class="feature-title">AI Document Verification</div>
+            <div class="feature-desc">Uploaded Aadhaar and PAN cards are scanned by AI to detect tampering, forgery, and mismatched numbers in real-time.</div>
+        </div>
+        <div class="feature-card red">
+            <div class="feature-icon">🧠</div>
+            <div class="feature-title">Behavioral Fraud Scoring</div>
+            <div class="feature-desc">Every application gets a 0–100 composite fraud score based on submission speed, timing, IP patterns, and identity signals.</div>
+        </div>
+        <div class="feature-card yellow">
+            <div class="feature-icon">🕸️</div>
+            <div class="feature-title">Syndicate Detection</div>
+            <div class="feature-desc">Graph-based identity clustering detects fraud rings where multiple fake identities share the same phone, IP, or device.</div>
+        </div>
+        <div class="feature-card blue">
+            <div class="feature-icon">🔗</div>
+            <div class="feature-title">Blockchain Audit Trail</div>
+            <div class="feature-desc">Every application is hashed and recorded on a tamper-evident blockchain ledger — creating an immutable evidence trail.</div>
+        </div>
+        <div class="feature-card green">
+            <div class="feature-icon">🗺️</div>
+            <div class="feature-title">Cross-Scheme Detection</div>
+            <div class="feature-desc">Checks if an applicant has already enrolled in another welfare scheme — preventing double-dipping across PMAY, PM-KISAN, MGNREGA and more.</div>
+        </div>
+        <div class="feature-card red">
+            <div class="feature-icon">📋</div>
+            <div class="feature-title">Explainable Verdicts</div>
+            <div class="feature-desc">Every fraud flag comes with a human-readable evidence trail showing exactly which signals triggered the alert — no black box.</div>
+        </div>
+    </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+    <div class="section">
+        <p class="section-tag">How It Works</p>
+        <h2 class="section-title">From submission to verdict in seconds</h2>
+        <p class="section-sub">A multi-layered pipeline runs automatically on every application.</p>
+
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-num">STEP 01</div>
+                <div class="step-title">Submit Application</div>
+                <div class="step-desc">Applicant fills the form with personal details, selects a welfare scheme, and uploads Aadhaar + PAN documents.</div>
+            </div>
+            <div class="step-card">
+                <div class="step-num">STEP 02</div>
+                <div class="step-title">AI Document Scan</div>
+                <div class="step-desc">AI verifies document authenticity, checks for tampering, and confirms the numbers match what was entered.</div>
+            </div>
+            <div class="step-card">
+                <div class="step-num">STEP 03</div>
+                <div class="step-title">Fraud Score Engine</div>
+                <div class="step-desc">9 behavioral and identity signals are evaluated to generate a 0–100 fraud score with detailed reasons.</div>
+            </div>
+            <div class="step-card">
+                <div class="step-num">STEP 04</div>
+                <div class="step-title">Blockchain Record</div>
+                <div class="step-desc">The application and its verdict are hashed and permanently recorded on the blockchain audit ledger.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-section">
+    <h2 class="cta-title">Ready to apply for a scheme?</h2>
+    <p class="cta-sub">Submit your application securely. Legitimate applications are processed instantly.</p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+        <a href="/applications/new" class="btn-hero-primary">🛡️ Apply Now</a>
+        <a href="/signup" class="btn-hero-outline">Create Account →</a>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="fl-footer">
+    <span>⬡ FRAUDLENS</span> — AI-Powered Government Scheme Integrity System &nbsp;|&nbsp; VOIS Tech Innovation Marathon 2.0
+</footer>
+
+</body>
+</html>

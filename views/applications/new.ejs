@@ -1,83 +1,118 @@
 <% layout("/layouts/boilerplate") %>
-<div class="row application-list">
-    <div class="col-8 offset-2">
-        <br>
-    <h3> New Application </h3>
-    <form action="/applications" method="POST" enctype="multipart/form-data">
 
-            <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
-            <input name="application[name]" 
-            placeholder="Enter your name" 
-            type="text" 
-            class="form-control">
-        </div>
+<div style="max-width:680px;margin:0 auto;">
 
-        <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <input name="application[email]" 
-            placeholder="Enter your email"
-            class="form-control"
-            >
-        </div>
+    <div class="page-heading">New Application</div>
+    <div class="page-sub">FILL ALL DETAILS CAREFULLY — AI VERIFICATION ENABLED</div>
 
-        <div class="mb-3">
-            <label for="phone" class="form-label">Phone</label>
-            <input
-  type="number"
-  placeholder="Enter your Mobile Number"
-  name="application[phone]"
-  maxlength="10"
-  pattern="[6-9]\d{9}"
-  inputmode="numeric"
-  class="form-control"
-  required
-  title="Mobile number must be 10 digits and start with 6-9">
-        </div>
+    <div class="fl-card">
+        <form action="/applications" method="POST" enctype="multipart/form-data">
 
-        <div class="mb-3">
-    <label for="Aadhar Number" class="form-label">Aadhar Number</label>
-    <input 
-  type="number"
-  placeholder="Enter your Pan Number" 
-  name="application[aadhaar_no]"
-  maxlength="12"
-  pattern="\d{12}"
-  inputmode="numeric"
-  class="form-control"
-  required
-  title="Aadhaar must be exactly 12 digits">
+            <!-- Row 1: Name + Email -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem;">
+                <div>
+                    <label class="form-label">Full Name</label>
+                    <input name="application[name]" placeholder="Enter your full name"
+                        type="text" class="form-control" required>
+                </div>
+                <div>
+                    <label class="form-label">Email Address</label>
+                    <input name="application[email]" placeholder="your@email.com"
+                        type="email" class="form-control" required>
+                </div>
+            </div>
 
-</div>
+            <!-- Row 2: Phone + Scheme -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem;">
+                <div>
+                    <label class="form-label">Mobile Number</label>
+                    <input type="tel" placeholder="10-digit mobile number"
+                        name="application[phone]" maxlength="10"
+                        pattern="[6-9]\d{9}" inputmode="numeric"
+                        class="form-control" required
+                        title="Mobile number must be 10 digits and start with 6-9">
+                </div>
+                <div>
+                    <label class="form-label">Welfare Scheme</label>
+                    <select name="application[scheme]" class="form-select" required>
+                        <option value="">-- Select Scheme --</option>
+                        <option value="PMAY">PM Awas Yojana (PMAY)</option>
+                        <option value="PM-KISAN">PM KISAN</option>
+                        <option value="MGNREGA">MGNREGA</option>
+                        <option value="UJJWALA">Ujjwala Yojana</option>
+                        <option value="AYUSHMAN">Ayushman Bharat</option>
+                        <option value="GENERAL">General</option>
+                    </select>
+                </div>
+            </div>
 
-<div class="mb-3">
-    <label for="PAN Number" class="form-label">PAN Number</label>
-    <input
-  name="application[pan_no]"
-  placeholder="Enter PAN number"
-  type="text"
-  class="form-control"
-  pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
-  maxlength="10"
-  required
-  title="PAN must be in format ABCDE1234F">
+            <!-- Row 3: Aadhaar + PAN -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem;">
+                <div>
+                    <label class="form-label">Aadhaar Number</label>
+                    <input type="text" placeholder="12-digit Aadhaar"
+                        name="application[aadhaar_no]" maxlength="12"
+                        pattern="\d{12}" inputmode="numeric"
+                        class="form-control" required
+                        title="Aadhaar must be exactly 12 digits">
+                </div>
+                <div>
+                    <label class="form-label">PAN Number</label>
+                    <input name="application[pan_no]" placeholder="ABCDE1234F"
+                        type="text" class="form-control"
+                        pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+                        maxlength="10" required
+                        title="PAN must be in format ABCDE1234F"
+                        style="text-transform:uppercase;">
+                </div>
+            </div>
 
-</div>
+            <!-- Divider -->
+            <div style="border-top:1px solid var(--border);margin:1.5rem 0;"></div>
+            <p style="font-family:var(--mono);font-size:0.65rem;letter-spacing:1.5px;color:var(--muted);margin-bottom:1.2rem;">DOCUMENT UPLOAD — AI WILL VERIFY AUTHENTICITY</p>
 
+            <!-- Row 4: File uploads -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.8rem;">
+                <div>
+                    <label class="form-label">Aadhaar Card (Image / PDF)</label>
+                    <input type="file" name="aadhaarFile" id="aadhaarFile"
+                        accept="image/*,.pdf" class="form-control" required>
+                </div>
+                <div>
+                    <label class="form-label">PAN Card (Image / PDF)</label>
+                    <input type="file" name="panFile" id="panFile"
+                        accept="image/*,.pdf" class="form-control" required>
+                </div>
+            </div>
 
-    <div class="mb-3">
-    <label for="aadhaarFile" class="form-label">Upload Aadhaar Card</label>
-    <input type="file" name="aadhaarFile" id="aadhaarFile" accept="image/*,.pdf" class="form-control" required>
-</div>
+            <!-- Hidden fill time -->
+            <input type="hidden" name="application[fillTimeSeconds]" id="fillTimeSeconds">
 
-<div class="mb-3">
-    <label for="panFile" class="form-label">Upload PAN Card</label>
-    <input type="file" name="panFile" id="panFile" accept="image/*,.pdf" class="form-control" required>
-</div>
+            <!-- AI notice -->
+            <div style="background:rgba(0,229,176,0.05);border:1px solid rgba(0,229,176,0.15);border-radius:8px;padding:0.9rem 1.1rem;margin-bottom:1.5rem;display:flex;gap:0.75rem;align-items:flex-start;">
+                <span style="font-size:1rem;margin-top:1px;">🛡️</span>
+                <p style="font-family:var(--mono);font-size:0.68rem;color:var(--muted);letter-spacing:0.5px;line-height:1.6;margin:0;">
+                    Your documents will be analyzed by AI for tampering detection. Aadhaar and PAN numbers must match the uploaded documents exactly. Fraudulent submissions are permanently recorded on blockchain.
+                </p>
+            </div>
 
-        <br>
-        <button class="btn btn-dark add-btn">Apply</button>
-        <br> <br>
-    </form>
+            <button type="submit" class="btn-fl-primary">
+                Submit Application →
+            </button>
+
+        </form>
     </div>
 </div>
+
+<script>
+    const _startTime = Date.now();
+    document.querySelector("form").addEventListener("submit", function () {
+        document.getElementById("fillTimeSeconds").value =
+            Math.floor((Date.now() - _startTime) / 1000);
+    });
+
+    // PAN auto uppercase
+    document.querySelector('[name="application[pan_no]"]').addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+    });
+</script>

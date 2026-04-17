@@ -5,35 +5,430 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FraudLens</title>
 
-    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-          rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080a0f;
+            --surface: #0f1117;
+            --surface2: #161b24;
+            --border: #1e2433;
+            --border2: #2a3347;
+            --text: #e2e8f0;
+            --muted: #64748b;
+            --accent: #00e5b0;
+            --accent2: #0066ff;
+            --danger: #ff3d5a;
+            --warning: #ffaa00;
+            --success: #00e5b0;
+            --mono: 'Space Mono', monospace;
+            --display: 'Syne', sans-serif;
+        }
 
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    <link rel="stylesheet" href="/css/base.css">
-    <link rel="stylesheet" href="/css/auth.css">
-    <link rel="stylesheet" href="/css/application.css">
-    <link rel="stylesheet" href="/css/applications.css">
-    <link rel="stylesheet" href="/css/dashboard.css">
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--display);
+            min-height: 100vh;
+        }
+
+        /* Subtle dot grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(0,229,176,0.06) 1px, transparent 1px);
+            background-size: 32px 32px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── NAVBAR ── */
+        .fl-navbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(8,10,15,0.92);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .fl-brand {
+            font-family: var(--mono);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 3px;
+            text-decoration: none;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .fl-brand .dot {
+            width: 8px; height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        .fl-nav-links {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            list-style: none;
+        }
+        .fl-nav-links a {
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--muted);
+            text-decoration: none;
+            padding: 0.4rem 0.9rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .fl-nav-links a:hover {
+            color: var(--accent);
+            border-color: rgba(0,229,176,0.2);
+            background: rgba(0,229,176,0.05);
+        }
+        .fl-nav-links .btn-nav {
+            background: var(--accent);
+            color: #000 !important;
+            font-weight: 700;
+            border-color: var(--accent) !important;
+        }
+        .fl-nav-links .btn-nav:hover {
+            background: #00c99a;
+            color: #000 !important;
+        }
+        .fl-nav-links .btn-nav-outline {
+            border-color: var(--border2) !important;
+            color: var(--text) !important;
+        }
+        .fl-nav-links .btn-nav-outline:hover {
+            border-color: var(--danger) !important;
+            color: var(--danger) !important;
+            background: rgba(255,61,90,0.05) !important;
+        }
+
+        /* ── FLASH MESSAGES ── */
+        .flash-wrap {
+            position: fixed;
+            top: 70px;
+            right: 1.5rem;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-width: 360px;
+        }
+        .flash-msg {
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(20px); opacity: 0; }
+            to   { transform: translateX(0);    opacity: 1; }
+        }
+        .flash-success {
+            background: rgba(0,229,176,0.1);
+            border: 1px solid rgba(0,229,176,0.3);
+            color: var(--accent);
+        }
+        .flash-error {
+            background: rgba(255,61,90,0.1);
+            border: 1px solid rgba(255,61,90,0.3);
+            color: var(--danger);
+        }
+
+        /* ── MAIN CONTENT ── */
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+            padding: 2.5rem 0;
+        }
+
+        /* ── CARDS ── */
+        .fl-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.8rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .fl-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), transparent 60%);
+        }
+
+        /* ── FORM CONTROLS ── */
+        .form-control, .form-select {
+            background: var(--surface2) !important;
+            border: 1px solid var(--border2) !important;
+            color: var(--text) !important;
+            border-radius: 8px !important;
+            font-family: var(--display) !important;
+            font-size: 0.9rem !important;
+            padding: 0.65rem 1rem !important;
+            transition: border-color 0.2s, box-shadow 0.2s !important;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 0 3px rgba(0,229,176,0.1) !important;
+            outline: none !important;
+        }
+        .form-control::placeholder { color: var(--muted) !important; }
+        .form-label {
+            font-family: var(--mono) !important;
+            font-size: 0.68rem !important;
+            letter-spacing: 1.5px !important;
+            text-transform: uppercase !important;
+            color: var(--muted) !important;
+            margin-bottom: 0.4rem !important;
+        }
+        .form-select option { background: var(--surface2); }
+
+        /* ── BUTTONS ── */
+        .btn-fl-primary {
+            background: var(--accent);
+            color: #000;
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 0.7rem 2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        .btn-fl-primary:hover {
+            background: #00c99a;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(0,229,176,0.2);
+        }
+
+        .btn-fl-danger {
+            background: transparent;
+            color: var(--danger);
+            font-family: var(--mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 0.6rem 1.5rem;
+            border: 1px solid var(--danger);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-fl-danger:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* ── FOOTER ── */
+        .fl-footer {
+            border-top: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            text-align: center;
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            color: var(--muted);
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+        }
+        .fl-footer span { color: var(--accent); }
+
+        /* ── PAGE TITLES ── */
+        .page-heading {
+            font-family: var(--mono);
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.5px;
+            margin-bottom: 0.3rem;
+        }
+        .page-sub {
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            color: var(--muted);
+            letter-spacing: 1px;
+            margin-bottom: 2rem;
+        }
+
+        /* ── STAT CARDS ── */
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); }
+        .stat-card .stat-label {
+            font-family: var(--mono);
+            font-size: 0.62rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 0.6rem;
+        }
+        .stat-card .stat-value {
+            font-family: var(--mono);
+            font-size: 2.2rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .stat-card .stat-icon {
+            position: absolute;
+            right: 1.2rem;
+            top: 1.2rem;
+            font-size: 1.4rem;
+            opacity: 0.15;
+        }
+        .stat-card.accent  { border-color: rgba(0,229,176,0.3); }
+        .stat-card.accent  .stat-value { color: var(--accent); }
+        .stat-card.danger  { border-color: rgba(255,61,90,0.3); }
+        .stat-card.danger  .stat-value { color: var(--danger); }
+        .stat-card.warning { border-color: rgba(255,170,0,0.3); }
+        .stat-card.warning .stat-value { color: var(--warning); }
+        .stat-card.blue    { border-color: rgba(0,102,255,0.3); }
+        .stat-card.blue    .stat-value { color: var(--accent2); }
+
+        /* ── TABLE ── */
+        .fl-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+        .fl-table th {
+            font-family: var(--mono);
+            font-size: 0.62rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            font-weight: 400;
+        }
+        .fl-table td {
+            padding: 0.9rem 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+            vertical-align: middle;
+        }
+        .fl-table tr:last-child td { border-bottom: none; }
+        .fl-table tr:hover td { background: var(--surface2); }
+        .fl-table a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .fl-table a:hover { text-decoration: underline; }
+
+        /* ── BADGES ── */
+        .fl-badge {
+            display: inline-block;
+            font-family: var(--mono);
+            font-size: 0.6rem;
+            letter-spacing: 1px;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .fl-badge-danger  { background: rgba(255,61,90,0.15);  color: var(--danger);  border: 1px solid rgba(255,61,90,0.3); }
+        .fl-badge-warning { background: rgba(255,170,0,0.15);  color: var(--warning); border: 1px solid rgba(255,170,0,0.3); }
+        .fl-badge-success { background: rgba(0,229,176,0.15);  color: var(--accent);  border: 1px solid rgba(0,229,176,0.3); }
+    </style>
 </head>
+<body>
 
-<body class="page-wrapper">
+    <!-- NAVBAR -->
+    <nav class="fl-navbar">
+        <a href="/applications" class="fl-brand">
+            <span class="dot"></span>
+            FraudLens
+        </a>
+        <ul class="fl-nav-links">
+            <li><a href="/applications">Applications</a></li>
+            <li><a href="/dashboard">Dashboard</a></li>
+            <% if (currUser) { %>
+                <li><a href="/logout" class="btn-nav-outline">Logout</a></li>
+            <% } else { %>
+                <li><a href="/login">Login</a></li>
+                <li><a href="/signup" class="btn-nav">Sign Up</a></li>
+            <% } %>
+        </ul>
+    </nav>
 
-    <%- include("../Includes/navbar.ejs") %>
+    <!-- FLASH MESSAGES -->
+    <div class="flash-wrap">
+        <% if (success && success.length > 0) { %>
+            <div class="flash-msg flash-success">✓ <%= success[0] %></div>
+        <% } %>
+        <% if (error && error.length > 0) { %>
+            <div class="flash-msg flash-error">✗ <%= error[0] %></div>
+        <% } %>
+    </div>
 
-    <%- include("../includes/flash") %>
-
+    <!-- MAIN -->
     <main class="content-wrapper">
-        <div class="container mt-4">
+        <div class="container">
             <%- body %>
         </div>
     </main>
 
-    <%- include("../Includes/footer.ejs") %>
+    <!-- FOOTER -->
+    <footer class="fl-footer">
+        <span>⬡ FRAUDLENS</span> — AI-Powered Government Scheme Integrity System &nbsp;|&nbsp; Built for upXgen Hackathon
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto-hide flash messages after 4s
+        setTimeout(() => {
+            document.querySelectorAll('.flash-msg').forEach(el => {
+                el.style.transition = 'opacity 0.5s';
+                el.style.opacity = '0';
+                setTimeout(() => el.remove(), 500);
+            });
+        }, 4000);
+    </script>
 </body>
 </html>

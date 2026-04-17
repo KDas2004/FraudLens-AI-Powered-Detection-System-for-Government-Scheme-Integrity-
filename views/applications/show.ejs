@@ -17,13 +17,65 @@
         <button>Cancle This Application</button>
 
         <div class="mt-3">
-    <h4>Aadhaar Card</h4>
-    <a href="/uploads/<%= application.aadhaar_file %>" target="_blank">View Aadhaar</a>
+            <h4>Aadhaar Card</h4>
+            <a href="/uploads/<%= application.aadhaar_file %>" target="_blank">View Aadhaar</a>
 
-    <h4>PAN Card</h4>
-    <a href="/uploads/<%= application.pan_file %>" target="_blank">View PAN</a>
-</div>
-
+            <h4>PAN Card</h4>
+            <a href="/uploads/<%= application.pan_file %>" target="_blank">View PAN</a>
+        </div>
     </form>
+
+    <!-- FRAUD REPORT CARD -->
+    <%
+        var bgColor = application.fraudVerdict === 'HIGH RISK' ? '#ff4444' : application.fraudVerdict === 'MEDIUM RISK' ? '#ff9900' : '#28a745';
+        var badgeClass = application.fraudVerdict === 'HIGH RISK' ? 'bg-danger' : application.fraudVerdict === 'MEDIUM RISK' ? 'bg-warning text-dark' : 'bg-success';
+    %>
+    <div class="card mt-4 border-0 shadow">
+        <div class="card-header fw-bold">
+            🔍 Fraud Analysis Report
+        </div>
+        <div class="card-body text-center">
+
+            <!-- Score Circle -->
+            <div class="mx-auto mb-3 rounded-circle d-flex flex-column align-items-center justify-content-center fw-bold"
+                style="width:120px;height:120px;font-size:2rem;background:<%= bgColor %>;color:white;">
+                <%= application.fraudScore || 0 %>
+                <span style="font-size:0.8rem">/ 100</span>
+            </div>
+
+            <!-- Verdict Badge -->
+            <span class="badge fs-6 mb-3 <%= badgeClass %>">
+                ⚠️ <%= application.fraudVerdict || 'LOW RISK' %>
+            </span>
+
+            <!-- Scheme -->
+            <p class="mb-2"><strong>Scheme:</strong> <%= application.scheme || 'GENERAL' %></p>
+
+            <!-- Tamper Info -->
+            <p class="mb-2"><strong>Document Integrity Score:</strong> <%= application.tamperScore || 'N/A' %>%</p>
+            <p class="mb-3 text-muted"><%= application.tamperReason || 'No issues detected' %></p>
+
+            <!-- Evidence Trail -->
+            <% if (application.fraudReasons && application.fraudReasons.length > 0) { %>
+                <h6 class="text-start fw-bold">🚨 Evidence Trail</h6>
+                <ul class="list-group text-start mb-3">
+                    <% application.fraudReasons.forEach(function(reason) { %>
+                        <li class="list-group-item list-group-item-danger">🔴 <%= reason %></li>
+                    <% }) %>
+                </ul>
+            <% } else { %>
+                <p class="text-success">✅ No fraud signals detected</p>
+            <% } %>
+
+            <!-- Audit Stamp -->
+            <p class="text-muted" style="font-size:0.75rem;font-family:monospace;">
+                Analysis generated at <%= application.submittedAt ? new Date(application.submittedAt).toISOString() : 'N/A' %>
+                | IP: <%= application.ipAddress || 'N/A' %>
+                | Fill time: <%= application.fillTimeSeconds || 'N/A' %>s
+            </p>
+
+        </div>
+    </div>
+
 </body>
 </html>
